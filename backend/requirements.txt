@@ -1,7 +1,13 @@
+# Backend - FastAPI
 fastapi
 uvicorn
-transformers
-torch
+pydantic
+python-multipart
+
 nltk
 spacy
-python-multipart
+
+huggingface-hub
+
+python-dotenv
+requests
