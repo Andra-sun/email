@@ -1,13 +1,14 @@
 import re
 import spacy
 from nltk.corpus import stopwords
+from app.core.config import settings
 
 try:
-    nlp = spacy.load("pt_core_news_sm")
+    nlp = spacy.load(settings.SPACY_MODEL)
 except OSError:
     raise RuntimeError(
-        "Modelo Spacy não encontrado. "
-        "Execute: python -m spacy download pt_core_news_sm"
+        f"Modelo Spacy não encontrado. "
+        f"Execute: python -m spacy download {settings.SPACY_MODEL}"
     )
 
 stop_words = set(stopwords.words("portuguese"))

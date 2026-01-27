@@ -1,11 +1,12 @@
 import requests
 import logging
 from typing import Dict
+from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
-HF_API_URL = "https://api-inference.huggingface.co/models/MoritzLaurer/DeBERTa-v3-large-mnli-fever-docnli-ling-2c"
-HF_TOKEN = None
+HF_API_URL = settings.HF_API_URL
+HF_TOKEN = settings.HF_TOKEN
 
 def classify_email(text: str) -> Dict[str, any]:
     """
