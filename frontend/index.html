@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <script src="https://cdn.tailwindcss.com"></script>
+
+        <link
+            href="https://cdn.quilljs.com/1.3.6/quill.snow.css"
+            rel="stylesheet"
+        />
+        <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+
+        <link
+            rel="stylesheet"
+            href="https://cdn-uicons.flaticon.com/3.0.0/uicons-regular-rounded/css/uicons-regular-rounded.css"
+        />
+
+        <link rel="stylesheet" href="quill/quill.css" />
+
+        <title>Email</title>
+    </head>
+
+    <body class="bg-slate-950 text-slate-100 min-h-screen">
+        <div class="p-6 py-12 mx-auto max-w-3xl">
+            <div class="mb-12">
+                <h1 class="text-4xl font-bold mb-2">Analizar Email</h1>
+                <p class="text-slate-400">Escolha entre escrever ou adicionar arquivo</p>
+            </div>
+            <div
+                class="bg-slate-900 rounded-lg border border-slate-800 overflow-hidden"
+            >
+                <!-- ida -->
+                <!-- upload de arquivos txt ou pdf -->
+                <!-- escrever diretamente o email -->
+                <!-- botão de enviar -->
+
+                <div class="bg-slate-800 border-b border-slate-700 px-6 py-4 flex gap-4">
+                    <button
+                        class="pb-3 px-1 border-b-2 border-blue-500 text-blue-400 font-medium transition-colors cursor-pointer"
+                        onclick="toggleTab('write')"
+                        id="write-tab"
+                    >
+                        Escrever
+                    </button>
+                    <button
+                        class="pb-3 px-1 border-b-2 border-transparent text-slate-400 hover:text-slate-300 font-medium transition-colors cursor-pointer"
+                        onclick="toggleTab('file')"
+                        id="file-tab"
+                    >
+                        Arquivo
+                    </button>
+                </div>
+
+                <div id="write-section" class="flex flex-col">
+                    <div class="p-6">
+                        <div
+                            id="editor"
+                            class="bg-slate-800 rounded-lg overflow-hidden"
+                            style="min-height: 400px"
+                        >
+                            <p></p>
+                        </div>
+
+                        <div class="mt-4 text-slate-400 text-sm">
+                            <span id="char-count">0 caracteres</span>
+                        </div>
+                    </div>
+
+                    <div
+                        class="bg-slate-800 border-t border-slate-700 px-6 py-4 flex gap-3"
+                    >
+                        <button
+                            class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2"
+                            id="send-btn"
+                        >
+                            <i class="fi fi-rr-paper-plane"></i>
+                            Processar Email
+                        </button>
+                        <button
+                            class="bg-slate-700 hover:bg-slate-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors cursor-pointer"
+                            onclick="clearEditor()"
+                        >
+                            Limpar
+                        </button>
+                    </div>
+                </div>
+
+                <div id="file-section" class="hidden flex flex-col">
+                    <div class="p-6 flex flex-col gap-4">
+                        <p class="text-slate-400 text-sm">
+                            Envie um arquivo PDF ou TXT
+                        </p>
+                        <label
+                            class="flex items-center justify-center gap-2 w-full p-4 border-2 border-dashed border-slate-600 rounded-lg hover:border-blue-500 hover:bg-slate-700/50 cursor-pointer transition-colors"
+                        >
+                            <i
+                                class="fi fi-rr-cloud-upload text-2xl text-blue-400"
+                            ></i>
+                            <span class="text-slate-400"
+                                >Selecionar arquivo</span
+                            >
+                            <input
+                                type="file"
+                                accept=".pdf,.txt"
+                                id="file-input"
+                                class="hidden"
+                                onchange="handleFileSelect(event)"
+                            />
+                        </label>
+                        <div
+                            id="file-name"
+                            class="text-sm text-green-400 flex items-center gap-2 hidden"
+                        >
+                            <i class="fi fi-rr-check-circle text-lg"></i>
+                            Arquivo carregado com sucesso
+                            <span id="file-text"></span>
+                        </div>
+                    </div>
+
+                    <div
+                        class="bg-slate-800 border-t border-slate-700 px-6 py-4"
+                    >
+                        <button
+                            id="send-file-btn"
+                            class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                            disabled
+                        >
+                            <i class="fi fi-rr-paper-plane"></i>
+                            Processar Arquivo
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!-- volta -->
+            <!-- categoria: Produtivo ou impodutivo -->
+            <!-- resposta automatica -->
+        </div>
+
+        <script src="quill/quill.js"></script>
+        <script src="script.js"></script>
+    </body>
+</html>
