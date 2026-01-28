@@ -1,7 +1,15 @@
 import re
+import os
 import spacy
+import nltk
 from nltk.corpus import stopwords
 from app.core.config import settings
+
+NLTK_DATA_DIR = "/opt/render/project/src/nltk_data"
+os.makedirs(NLTK_DATA_DIR, exist_ok=True)
+
+nltk.data.path.append(NLTK_DATA_DIR)
+nltk.download("stopwords", download_dir=NLTK_DATA_DIR)
 
 try:
     nlp = spacy.load(settings.SPACY_MODEL)
@@ -37,7 +45,7 @@ def preprocess_text(text: str) -> str:
     
     text = re.sub(r'http\S+|www\S+', '', text)
     
-    text = re.sub(r"[a-zà-ú\s]", " ", text)
+    text = re.sub(r"[^a-zà-ú\s]", " ", text)
     
     doc = nlp(text)
     
