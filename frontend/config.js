@@ -1,34 +1,21 @@
 /**
- * Carrega variáveis de ambiente do arquivo .env
- * Faz uma requisição para o arquivo .env e o parseia
+ * Configuração da aplicação
+ * Define a URL do backend baseado no ambiente
  */
 
-async function loadEnv() {
-    try {
-        const response = await fetch('./.env');
-        const text = await response.text();
-        const env = {};
+const defaults = {
+    development: "http://localhost:8000",
+    production: "https://email-w3m9.onrender.com",
+};
 
-        text.split('\n').forEach(line => {
-            const trimmed = line.trim();
-            if (trimmed && !trimmed.startsWith('#')) {
-                const [key, ...valueParts] = trimmed.split('=');
-                if (key) {
-                    env[key.trim()] = valueParts.join('=').trim();
-                }
-            }
-        });
+const isDevelopment =
+    !window.location.hostname ||
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1";
 
-        return env;
-    } catch (error) {
-        console.warn('Erro ao carregar .env:', error);
-        return {};
-    }
-}
-
-const envVars = await loadEnv();
-
-export const BACKEND_URL = envVars.BACKEND_URL || 'http://localhost:8000';
+export const BACKEND_URL =
+    window.BACKEND_URL ||
+    (isDevelopment ? defaults.development : defaults.production);
 
 export default {
     BACKEND_URL,

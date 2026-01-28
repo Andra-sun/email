@@ -6,6 +6,14 @@ let quill;
 let responseQuill;
 
 export function initializeQuill() {
+    // Aguarda o Quill estar disponível globalmente
+    if (typeof Quill === "undefined") {
+        console.error(
+            "Quill não foi carregado. Verifique se o script do Quill está no HTML.",
+        );
+        return;
+    }
+
     quill = new Quill("#editor", {
         theme: "snow",
         modules: {
@@ -26,6 +34,11 @@ export function initializeQuill() {
 }
 
 export function initializeResponseQuill() {
+    if (typeof Quill === "undefined") {
+        console.error("Quill não foi carregado.");
+        return;
+    }
+
     responseQuill = new Quill("#response-editor", {
         theme: "snow",
         modules: {
