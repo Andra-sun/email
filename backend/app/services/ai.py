@@ -1,139 +1,220 @@
-import requests
 import logging
 from typing import Dict
+from openai import OpenAI
 from app.core.config import settings
+import json
+import re
 
 logger = logging.getLogger(__name__)
 
-HF_API_URL = settings.HF_API_URL
-HF_TOKEN = settings.HF_TOKEN
+client = OpenAI(
+    base_url="https://router.huggingface.co/v1",
+    api_key=settings.HF_TOKEN,
+)
+
+
+def _extract_json_from_text(text: str) -> Dict:
+    """Extrai JSON de um texto que pode conter outros caracteres"""
+    # Tenta primeiro o parse direto
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        pass
+    
+    # Tenta encontrar um JSON entre chaves
+    json_match = re.search(r'\{.*\}', text, re.DOTALL)
+    if json_match:
+        try:
+            return json.loads(json_match.group())
+        except json.JSONDecodeError:
+            pass
+    
+    raise ValueError("Não foi possível extrair JSON válido do texto")
+
 
 def classify_email(text: str) -> Dict[str, any]:
     """
-    Classifica email em Produtivo ou Inprodutivo usando Hugging Face.
-    
-    Args:
-        text: Texto pré-processado do email.
-        
-    Returns:
-        Dict com:
-        - classitication: 'Produtivo' ou 'Inprodutivo'
-        - confidence: Confiança (0-1)
-        - success: True/False
+    Classifica email E extrai confiança usando IA.
     """
-    
-    payload = {
-        "inputs": text,
-        "parameters": {
-            "candidate_labels": ["Produtivo", "Inprodutivo"],
-            "multi_class": False
-        }
-    }
-    
-    headers = {}
-    if HF_TOKEN:
-        headers["Authorization"] = f"Bearer {HF_TOKEN}"
-        
     
     try:
-        response = requests.post(
-            HF_API_URL,
-            json=payload,
-            headers=headers,
-            timeout=30
-        ) 
+        response = client.chat.completions.create(
+            model="openai/gpt-oss-20b:together",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "Você é um classificador de emails. Analise o texto e responda APENAS com um JSON válido, sem texto adicional."
+                },
+                {
+                    "role": "user",
+                    "content": f"""Classifique este email como "Produtivo" (trabalho relevante, propostas, projetos, reuniões, documentos importantes) ou "Improdutivo" (spam, promoções, clickbait, conteúdo irrelevante).
+
+Responda APENAS com este JSON (sem texto adicional):
+{{"classification": "Produtivo ou Improdutivo", "confidence": 0.0-1.0}}
+
+Email:
+{text}"""
+                }
+            ],
+            max_tokens=150,
+            temperature=0.1
+        )
+        response_text = response.choices[0].message.content.strip()
         
-        if response.status_code == 200:
-            result = response.json()
-            
-            return {
-                "classification": result['labels'][0],
-                "confidence": result['scores'][0],
-                "success": True
-            }
-        else:
-            logger.warning(f"API retornou status {response.status_code}")
-            return _fallback_classification(text)
+        logger.info(f"Resposta da API (raw): '{response_text}'")
+        logger.info(f"Tamanho da resposta: {len(response_text)} caracteres")
         
-    except requests.exceptions.Timeout:
-        logger.warning("Timeout na API HF, usando fallback")
-        return _fallback_classification(text)
+        result = _extract_json_from_text(response_text)
+        
+        return {
+            "classification": result.get("classification", "Produtivo"),
+            "confidence": float(result.get("confidence", 0.5)),
+            "success": True
+        }
     
+    except ValueError as e:
+        logger.error(f"Erro ao extrair JSON: {e}. Resposta: '{response_text if 'response_text' in locals() else 'N/A'}'")
+        return _fallback_classification(text)
+    except json.JSONDecodeError as e:
+        logger.error(f"Erro ao fazer parse JSON: {e}. Resposta recebida: '{response_text if 'response_text' in locals() else 'N/A'}'")
+        return _fallback_classification(text)
     except Exception as e:
         logger.error(f"Erro ao classificar: {e}")
-        return _fallback_classification(text)    
-    
+        return _fallback_classification(text)
+
+
 def _fallback_classification(text: str) -> Dict[str, any]:
-    """
-    Classificação por regras simples quando API falha.
-    
-    Args:
-        text: Texto para classificar
-        
-    Returns:
-        Classificação baseada em palavras-chave
-    """
-    
+    """Fallback com análise mais robusta de keywords"""
     text_lower = text.lower()
     
-    spam_keywords = [
-        "clique", "ganhe", "prêmio", "desconto", 
-        "promoção", "grátis", "oferta"
+    improdutive_keywords = [
+        "clique", "ganhe", "prêmio", "desconto", "promoção", "grátis",
+        "oferta", "compre agora", "limitado", "urgente", "aproveite",
+        "junte-se", "revenda", "oportunidade de ganho", "trabalhe conosco",
+        "acessar", "confirmar dados", "atualizar conta", "verificar segurança",
+        "click here", "buy now", "limited time", "exclusive offer",
+        "você ganhou", "parabéns", "sorteio", "loteria"
     ]
     
-    if any(kw in text_lower for kw in spam_keywords):
+    productive_keywords = [
+        "reunião", "projeto", "proposta", "análise", "relatório", "documento",
+        "apresentação", "planejamento", "estratégia", "objetivo", "meta",
+        "feedback", "revisão", "aprovação", "assinatura", "contrato",
+        "deadline", "entrega", "resultado", "performance", "dados",
+        "meeting", "schedule", "agenda", "discussion", "collaboration",
+        "budget", "invoice", "quarterly", "planning", "update"
+    ]
+    
+    improdutive_count = sum(1 for kw in improdutive_keywords if kw in text_lower)
+    productive_count = sum(1 for kw in productive_keywords if kw in text_lower)
+    
+    logger.info(f"Fallback - Improdutivo: {improdutive_count}, Produtivo: {productive_count}")
+    
+    if improdutive_count > productive_count:
         return {
-            "classification": "Inprodutivo",
-            "confidence": 0.7,
+            "classification": "Improdutivo",
+            "confidence": 0.6,
             "success": True,
             "fallback": True
         }
-        
-    productive_keywords = [
-        "reunião", "projeto", "proposta", 
-        "colaboração", "discussão", "análise"
-    ]
     
-    if any(kw in text_lower for kw in productive_keywords):
+    if productive_count > improdutive_count:
         return {
             "classification": "Produtivo",
-            "confidence": 0.7,
+            "confidence": 0.6,
             "success": True,
             "fallback": True
         }
-        
+    
+    return {
+        "classification": "Produtivo",
+        "confidence": 0.5,
+        "success": True,
+        "fallback": True
+    }
+
+
 def generate_response(
-    classification: str,
+    sender: str,
     subject: str,
-    context: str = "default"
+    message: str,
+    classification: str
 ) -> str:
     """
-    Gera resposta automática baseada na classificação.
-    
-    Args:
-        classification: "Produtivo" ou "Improdutivo"
-        subject: Assunto do email
-        context: Tipo de contexto (question, proposal, etc)
-        
-    Returns:
-        Resposta sugerida
+    Gera resposta contextualizada baseada no texto real.
     """
     
-    templates = {
-            "Produtivo": {
-            "question": f"Agradeço sua pergunta sobre '{subject}'. Vou analisar e retorno em breve.",
-            "proposal": f"Muito interessado em sua proposição sobre '{subject}'. Vamos avaliar.",
-            "urgent": f"Entendo a urgência. Vou priorizar '{subject}' e responder em breve.",
-            "default": f"Obrigado pelo seu email sobre '{subject}'. Responderei em breve."
-        },
-            "Improdutivo": {
-            "question": "Agradecemos seu contato, mas não conseguimos ajudar com esta solicitação.",
-            "proposal": "Sua proposta não está de acordo com nossos objetivos atuais.",
-            "urgent": "Infelizmente não conseguimos priorizar este assunto.",
-            "default": "Agradecemos o contato. Recomendamos outros canais para esta demanda."
-        }
-    }
+    try:
+        # Extrair nome do sender se houver
+        sender_name = None
+        if sender:
+            # Tenta extrair o nome antes do @ se for email
+            if "@" in sender:
+                sender_name = sender.split("@")[0].capitalize()
+            else:
+                sender_name = sender.capitalize()
+        
+        # Instruções sobre saudação
+        greeting_instruction = ""
+        if sender_name:
+            greeting_instruction = f"Comece a resposta chamando {sender_name} pelo nome."
+        else:
+            greeting_instruction = "Comece a resposta com uma saudação genérica (não tente chamar a pessoa pelo nome)."
+        
+        response = client.chat.completions.create(
+            model="openai/gpt-oss-20b:together",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "Você é um assistente profissional que gera respostas de email. Gere respostas completas, contextualizadas e bem estruturadas."
+                },
+                {
+                    "role": "user",
+                    "content": f"""Gere uma resposta profissional de email com 6-8 linhas.
+                    {greeting_instruction}
+                    A resposta deve ser {"positiva, construtiva e interessada" if classification == "Produtivo" else "educada, profissional mas que recusa a proposta"}.
+                    Referencie o conteúdo específico do email, não uma resposta genérica.
+                    Se houver assunto relevante, você pode citá-lo: "{subject}"
+
+                    Texto do email recebido:
+                    {message}
+
+                    Gere a resposta completa do email, sem prefácio ou explicações. A resposta deve incluir:
+                    - Saudação e agradecimento pelo contato
+                    - Referência ao conteúdo específico
+                    - Seu posicionamento (positivo se Produtivo, recusa educada se Improdutivo)
+                    - Menção que retornarão com feedback completo em breve
+                    - Fechamento profissional
+                    A resposta não deve incluir assinatura, nome, empresa ou contato fictico no final.
+                    """
+                }
+            ],
+            max_tokens=400,
+            temperature=0.7
+        )
+        
+        response_text = response.choices[0].message.content.strip()
+        logger.info(f"Resposta gerada (tamanho: {len(response_text)} chars)")
+        logger.info(f"Primeiros 150 chars: {response_text[:150]}")
+        
+        return response_text if response_text else _fallback_response(classification)
     
-    
-    response_dict = templates.get(classification, templates["Produtivo"])
-    return response_dict.get(context, response_dict["default"])
+    except Exception as e:
+        logger.error(f"Erro ao gerar resposta: {e}")
+        return _fallback_response(classification)
+
+
+def _fallback_response(classification: str) -> str:
+    """Fallback de resposta"""
+    if classification == "Produtivo":
+        return """Agradecemos o envio deste material.
+        Analisamos o conteúdo e consideramos relevante para nossa análise.
+        Vamos revisar com atenção todos os pontos apresentados.
+        Retornaremos com um feedback completo em breve.
+        Obrigado pela contribuição."""
+    else:
+        return """Agradecemos o contato.
+        Analisamos o material com cuidado.
+        No momento, não conseguimos prosseguir com esta solicitação.
+        Recomendamos buscar outros canais mais adequados.
+        Desejamos sucesso em seus projetos."""

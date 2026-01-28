@@ -1,14 +1,10 @@
 from pydantic_settings import BaseSettings
 from typing import Optional
 
+
 class Settings(BaseSettings):
-    """
-    Configurações da aplicação.
     
-    Lê variáveis de ambiente do arquivo .env
-    """
-    
-    APP_NAME: str = "Email"
+    APP_NAME: str = "Email Classifier"
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = False
     
@@ -17,16 +13,18 @@ class Settings(BaseSettings):
     ALLOWED_ORIGINS: list = [
         "http://localhost",
         "http://localhost:3000",
+        "http://localhost:5500",
         "http://localhost:8080",
         "http://127.0.0.1",
+        "http://127.0.0.1:5500",
     ]
     
-    HF_API_URL: str = "https://api-inference.huggingface.co/models/MoritzLaurer/DeBERTa-v3-large-mnli-fever-docnli-ling-2c"
-    HF_TOKEN: Optional[str] = None
+    HF_API_URL: str = "https://router.huggingface.co/v1"
+    HF_TOKEN: str = ""
     
     SPACY_MODEL: str = "pt_core_news_sm"
     
-    MAX_FILE_SIZE: int = 10 * 1024 * 1024  # 10MB
+    MAX_FILE_SIZE: int = 50 * 1024 * 1024
     ALLOWED_EXTENSIONS: list = [".pdf", ".txt"]
     
     class Config:
