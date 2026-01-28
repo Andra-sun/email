@@ -1,0 +1,65 @@
+.ql-toolbar {
+    background-color: rgb(30, 41, 59) !important;
+    border: 1px solid rgb(51, 65, 85) !important;
+    border-radius: 8px 8px 0 0;
+}
+
+.ql-container {
+    background-color: rgb(30, 41, 59) !important;
+    border: 1px solid rgb(51, 65, 85) !important;
+    border-radius: 0 0 8px 8px;
+    border-top: none !important;
+}
+
+.ql-editor {
+    color: rgb(226, 232, 240) !important;
+    font-size: 16px;
+    min-height: 350px;
+}
+
+.ql-editor.ql-blank::before {
+    color: rgb(100, 116, 139) !important;
+}
+
+.ql-toolbar button:hover,
+.ql-toolbar button.ql-active,
+.ql-toolbar button:focus,
+.ql-toolbar select:hover,
+.ql-toolbar select.ql-active,
+.ql-toolbar select:focus {
+    color: rgb(59, 130, 246) !important;
+}
+
+.ql-toolbar.ql-snow .ql-picker-label {
+    color: rgb(148, 163, 184) !important;
+}
+
+.ql-toolbar.ql-snow .ql-stroke {
+    stroke: rgb(148, 163, 184) !important;
+}
+
+.ql-toolbar.ql-snow .ql-fill,
+.ql-toolbar.ql-snow .ql-stroke.ql-fill {
+    fill: rgb(148, 163, 184) !important;
+}
+
+.ql-toolbar.ql-snow button.ql-active .ql-stroke {
+    stroke: rgb(59, 130, 246) !important;
+}
+
+.ql-toolbar.ql-snow button.ql-active .ql-fill {
+    fill: rgb(59, 130, 246) !important;
+}
+
+.ql-toolbar.ql-snow .ql-picker-options {
+    background-color: rgb(15, 23, 42) !important;
+    border: 1px solid rgb(51, 65, 85) !important;
+}
+
+.ql-toolbar.ql-snow .ql-picker-options .ql-selected {
+    color: rgb(59, 130, 246) !important;
+}
+
+.ql-snow a {
+    color: rgb(59, 130, 246) !important;
+}
