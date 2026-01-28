@@ -2,7 +2,7 @@
  * Serviço de API para classificação de emails
  */
 
-import { BACKEND_URL } from "../../config.js";
+import { BACKEND_URL } from "../config.js";
 
 /**
  * Classifica um email enviando o texto
@@ -52,7 +52,7 @@ export async function classifyEmailFile(file) {
             {
                 method: "POST",
                 body: formData,
-            },
+            }
         );
 
         if (!response.ok) {
