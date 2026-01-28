@@ -2,7 +2,7 @@
  * Serviço de API para classificação de emails
  */
 
-const BACKEND_URL = "http://localhost:8000";
+import { BACKEND_URL } from "../../config.js";
 
 /**
  * Classifica um email enviando o texto
