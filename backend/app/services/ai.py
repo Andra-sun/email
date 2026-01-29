@@ -38,6 +38,20 @@ def classify_email(text: str) -> Dict[str, any]:
     """
     
     try:
+        logger.info(f"[CLASSIFY_EMAIL] Tamanho do texto: {len(text)} caracteres")
+        logger.info(f"[CLASSIFY_EMAIL] Primeiros 200 chars do texto: {text[:200]}")
+        logger.info(f"[CLASSIFY_EMAIL] Token HF configurado: {'Sim' if settings.HF_TOKEN else 'NÃO - ERRO!'}")
+        
+        prompt = f"""Classifique este email como "Produtivo" (trabalho relevante, propostas, projetos, reuniões, documentos importantes) ou "Improdutivo" (spam, promoções, clickbait, conteúdo irrelevante).
+
+Responda APENAS com este JSON (sem texto adicional):
+{{"classification": "Produtivo ou Improdutivo", "confidence": 0.0-1.0}}
+
+Email:
+{text}"""
+        
+        logger.info(f"[CLASSIFY_EMAIL] Prompt completo a ser enviado:\n{prompt}")
+        
         response = client.chat.completions.create(
             model="openai/gpt-oss-20b:together",
             messages=[
@@ -47,22 +61,15 @@ def classify_email(text: str) -> Dict[str, any]:
                 },
                 {
                     "role": "user",
-                    "content": f"""Classifique este email como "Produtivo" (trabalho relevante, propostas, projetos, reuniões, documentos importantes) ou "Improdutivo" (spam, promoções, clickbait, conteúdo irrelevante).
-
-Responda APENAS com este JSON (sem texto adicional):
-{{"classification": "Produtivo ou Improdutivo", "confidence": 0.0-1.0}}
-
-Email:
-{text}"""
+                    "content": prompt
                 }
             ],
-            max_tokens=150,
             temperature=0.1
         )
         response_text = response.choices[0].message.content.strip()
         
-        logger.info(f"Resposta da API (raw): '{response_text}'")
-        logger.info(f"Tamanho da resposta: {len(response_text)} caracteres")
+        logger.info(f"[CLASSIFY_EMAIL] Resposta da API (raw): '{response_text}'")
+        logger.info(f"[CLASSIFY_EMAIL] Tamanho da resposta: {len(response_text)} caracteres")
         
         result = _extract_json_from_text(response_text)
         
@@ -145,16 +152,13 @@ def generate_response(
     """
     
     try:
-        # Extrair nome do sender se houver
         sender_name = None
         if sender:
-            # Tenta extrair o nome antes do @ se for email
             if "@" in sender:
                 sender_name = sender.split("@")[0].capitalize()
             else:
                 sender_name = sender.capitalize()
         
-        # Instruções sobre saudação
         greeting_instruction = ""
         if sender_name:
             greeting_instruction = f"Comece a resposta chamando {sender_name} pelo nome."
@@ -186,21 +190,54 @@ def generate_response(
                     - Menção que retornarão com feedback completo em breve
                     - Fechamento profissional
                     A resposta não deve incluir assinatura, nome, empresa ou contato fictico no final.
+                    
+                    Regras:
+                    - Não pode deixar frases incompletas.
+                    - Não pode gerar respostas genéricas ou vagas.
+                    - Deve sedmpre enviar o texto.
+                    - Deve sempre pontuar corretamente as frases.
+                    - deve haver ao menos 6 linhas na resposta.
+                    - Não pode haver mais de 10 linhas de respostas, ela deve ser completa no limite recomendado.
+                    
+                    Exemplo de resposta produtiva:
+                    Olá,
+
+                    Recebemos sua mensagem e analisamos as informações relacionadas ao prazo, escopo e pontos levantados.
+                    Alguns detalhes mencionados exigem uma validação interna antes de um posicionamento definitivo.
+                    Neste momento, estamos revisando os impactos e alinhamentos necessários sobre o tema apresentado.
+                    Em breve, retornaremos com uma resposta mais completa e direcionada ao seu pedido.
+                    Caso seja necessário complementar alguma informação, entraremos em contato.
+                    Agradecemos a compreensão e seguimos à disposição.
+
+                    Atenciosamente
+                    
+                    Exemplo de resposta improdutiva:
+                    A mensagem foi recebida e as informações apresentadas foram consideradas.
+                    No momento, o conteúdo não demanda qualquer ação ou encaminhamento adicional.
+                    Dessa forma, não haverá continuidade sobre o tema tratado.
+                    Caso surja algum ponto novo ou relevante, poderá ser enviado em um novo contato.
+                    Agradecemos a comunicação e a atenção dispensada.
+
+                    Atenciosamente
+                    
                     """
                 }
             ],
-            max_tokens=400,
-            temperature=0.7
+            temperature=0.4
         )
         
         response_text = response.choices[0].message.content.strip()
-        logger.info(f"Resposta gerada (tamanho: {len(response_text)} chars)")
-        logger.info(f"Primeiros 150 chars: {response_text[:150]}")
+        logger.info(f"[GENERATE_RESPONSE] Resposta gerada (tamanho: {len(response_text)} chars)")
+        logger.info(f"[GENERATE_RESPONSE] Primeiros 150 chars: {response_text[:150]}")
         
-        return response_text if response_text else _fallback_response(classification)
+        if not response_text:
+            logger.warning("[GENERATE_RESPONSE] Resposta vazia recebida! Usando fallback.")
+            return _fallback_response(classification)
+        
+        return response_text
     
     except Exception as e:
-        logger.error(f"Erro ao gerar resposta: {e}")
+        logger.error(f"[GENERATE_RESPONSE] Erro ao gerar resposta: {e}")
         return _fallback_response(classification)
 
 

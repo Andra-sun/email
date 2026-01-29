@@ -48,9 +48,16 @@ async def classify_email_endpoint(email: EmailRequest):
     try:
         full_text = f"{email.subject or ''} {email.message}"
         
-        logger.info(f"Processando email de {email.sender or 'desconhecido'}")
+        logger.info(f"[CLASSIFY_ENDPOINT] Email recebido de: {email.sender or 'desconhecido'}")
+        logger.info(f"[CLASSIFY_ENDPOINT] Assunto: {email.subject or 'vazio'}")
+        logger.info(f"[CLASSIFY_ENDPOINT] Tamanho da mensagem: {len(email.message)} caracteres")
+        logger.info(f"[CLASSIFY_ENDPOINT] Primeiros 200 chars da mensagem: {email.message[:200]}")
+        logger.info(f"[CLASSIFY_ENDPOINT] Full text para processar (tamanho): {len(full_text)} caracteres")
         
         processed_text = preprocess_text(full_text)
+        
+        logger.info(f"[CLASSIFY_ENDPOINT] Texto após preprocess (tamanho): {len(processed_text)} caracteres")
+        logger.info(f"[CLASSIFY_ENDPOINT] Primeiros 200 chars após preprocess: {processed_text[:200]}")
         
         classification_result = classify_email(processed_text)
         
