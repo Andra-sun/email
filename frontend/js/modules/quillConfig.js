@@ -54,7 +54,12 @@ export function initializeResponseQuill() {
 }
 
 export function getQuillContent() {
-    return quill.getText().trim();
+    const text = quill.getText().trim();
+    console.log("[getQuillContent] Conteúdo obtido do Quill:");
+    console.log("  - Tamanho:", text.length, "caracteres");
+    console.log("  - Conteúdo:", text);
+    console.log("  - Vazio?", text.length === 0 ? "SIM ⚠️" : "NÃO ✓");
+    return text;
 }
 
 export function getResponseQuillContent() {

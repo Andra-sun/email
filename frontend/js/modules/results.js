@@ -77,7 +77,6 @@ ${JSON.stringify(data, null, 2)}
 
     resultContent.innerHTML = html;
 
-
     if (sendSection) {
         sendSection.classList.add("hidden");
     }

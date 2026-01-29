@@ -8,9 +8,11 @@ import { handleFileSelect } from "./modules/fileUpload.js";
 import { handleSendEmail, handleSendFile } from "./modules/forms.js";
 import { clearResult } from "./modules/results.js";
 import { clearQuill } from "./modules/quillConfig.js";
+import { initializeHistory, clearHistory } from "./modules/history.js";
 
 document.addEventListener("DOMContentLoaded", () => {
     initializeQuill();
+    initializeHistory();
     setupEventListeners();
 });
 
@@ -51,3 +53,4 @@ window.toggleTab = toggleTab;
 window.handleFileSelect = handleFileSelect;
 window.clearEditor = clearEditor;
 window.clearResult = clearResult;
+window.clearHistoryData = clearHistory;

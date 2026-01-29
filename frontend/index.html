@@ -24,7 +24,49 @@
     </head>
 
     <body class="bg-slate-950 text-slate-100 min-h-screen">
-        <div class="p-6 py-12 mx-auto max-w-3xl">
+        <div class="flex h-screen">
+            <!-- Menu Lateral Histórico -->
+            <div id="history-sidebar" class="w-80 bg-slate-900 border-r border-slate-800 overflow-y-auto flex flex-col hidden md:flex">
+                <div class="p-4 border-b border-slate-800 sticky top-0 bg-slate-900">
+                    <div class="flex items-center justify-between gap-2">
+                        <h2 class="text-lg font-bold text-slate-100">Histórico</h2>
+                        <button
+                            onclick="toggleHistorySidebar()"
+                            class="md:hidden p-2 hover:bg-slate-800 rounded-lg transition-colors"
+                        >
+                            <i class="fi fi-rr-cross"></i>
+                        </button>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-1">Últimas 5 análises</p>
+                </div>
+                
+                <div id="history-cards" class="flex-1 p-3 space-y-2 overflow-y-auto">
+                    <div class="text-center text-slate-400 text-sm p-4">
+                        <p>Nenhuma análise realizada ainda</p>
+                    </div>
+                </div>
+                
+                <div class="p-3 border-t border-slate-800 sticky bottom-0 bg-slate-900">
+                    <button
+                        onclick="if(confirm('Deseja limpar todo o histórico?')) { window.clearHistoryData?.(); }"
+                        class="w-full text-sm text-red-400 hover:text-red-300 py-2 px-3 rounded-lg hover:bg-red-900/20 transition-colors"
+                    >
+                        Limpar Histórico
+                    </button>
+                </div>
+            </div>
+
+            <button
+                id="toggle-history-btn"
+                onclick="toggleHistorySidebar()"
+                class="md:hidden fixed bottom-6 right-6 z-40 p-4 bg-blue-600 hover:bg-blue-700 rounded-full shadow-lg transition-colors"
+                title="Abrir histórico"
+            >
+                <i class="fi fi-rr-time-past text-xl"></i>
+            </button>
+
+        <div class="flex-1 p-6 py-12 overflow-y-auto">
+            <div class="mx-auto max-w-3xl">
             <div class="mb-12">
                 <h1 class="text-4xl font-bold mb-2">Analizar Email</h1>
                 <p class="text-slate-400">Escolha entre escrever ou adicionar arquivo</p>
@@ -204,6 +246,9 @@
                     </div>
                 </div>
             </div>
+
+        </div>
+        </div>
 
         <script type="module" src="js/main.js"></script>
     </body>

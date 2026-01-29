@@ -13,26 +13,34 @@ import { BACKEND_URL } from "../config.js";
  */
 export async function classifyEmail(emailText, sender, subject) {
     try {
+        const payload = {
+            sender: sender,
+            subject: subject,
+            message: emailText,
+        };
+
+        console.log("📤 classifyEmail - Enviando payload:", payload);
+        console.log("📤 classifyEmail - URL:", `${BACKEND_URL}/api/v1/email/classify`);
+
         const response = await fetch(`${BACKEND_URL}/api/v1/email/classify`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({
-                sender: sender,
-                subject: subject,
-                message: emailText,
-            }),
+            body: JSON.stringify(payload),
         });
+
+        console.log("📥 classifyEmail - Status da resposta:", response.status, response.statusText);
 
         if (!response.ok) {
             throw new Error(`Erro ${response.status}: ${response.statusText}`);
         }
 
         const data = await response.json();
+        console.log("📥 classifyEmail - Dados recebidos:", data);
         return data;
     } catch (error) {
-        console.error("Erro ao classificar email:", error);
+        console.error("❌ classifyEmail - Erro:", error);
         throw error;
     }
 }
@@ -47,6 +55,13 @@ export async function classifyEmailFile(file) {
         const formData = new FormData();
         formData.append("file", file);
 
+        console.log("📤 classifyEmailFile - Enviando arquivo:", {
+            name: file.name,
+            size: file.size,
+            type: file.type
+        });
+        console.log("📤 classifyEmailFile - URL:", `${BACKEND_URL}/api/v1/email/classify-file`);
+
         const response = await fetch(
             `${BACKEND_URL}/api/v1/email/classify-file`,
             {
@@ -55,14 +70,17 @@ export async function classifyEmailFile(file) {
             }
         );
 
+        console.log("📥 classifyEmailFile - Status da resposta:", response.status, response.statusText);
+
         if (!response.ok) {
             throw new Error(`Erro ${response.status}: ${response.statusText}`);
         }
 
         const data = await response.json();
+        console.log("📥 classifyEmailFile - Dados recebidos:", data);
         return data;
     } catch (error) {
-        console.error("Erro ao classificar arquivo de email:", error);
+        console.error("❌ classifyEmailFile - Erro:", error);
         throw error;
     }
 }
