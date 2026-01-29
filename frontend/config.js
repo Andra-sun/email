@@ -5,7 +5,7 @@
 
 const defaults = {
     development: "http://localhost:8000",
-    production: "email-production-55e8.up.railway.app",
+    production: "https://email-production-55e8.up.railway.app",
 };
 
 const isDevelopment =
