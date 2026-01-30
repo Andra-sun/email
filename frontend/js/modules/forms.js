@@ -6,7 +6,7 @@ import { classifyEmail, classifyEmailFile } from "../api/emailService.js";
 import { getQuillContent, clearQuill } from "./quillConfig.js";
 import { clearFileInput, getSelectedFile } from "./fileUpload.js";
 import { showError, setButtonLoading } from "../utils/ui.js";
-import { showResult } from "./results.js";
+import { showResult, showLoadingSpinner } from "./results.js";
 import { toggleTab } from "./tabs.js";
 import { saveToHistory } from "./history.js";
 
@@ -30,6 +30,7 @@ export async function handleSendEmail() {
 
     const sendBtn = document.getElementById("send-btn");
     setButtonLoading(sendBtn, true);
+    showLoadingSpinner();
 
     console.log("📤 Enviando para o backend...");
     try {
@@ -73,6 +74,7 @@ export async function handleSendFile() {
 
     const sendFileBtn = document.getElementById("send-file-btn");
     setButtonLoading(sendFileBtn, true);
+    showLoadingSpinner();
 
     try {
         const result = await classifyEmailFile(file);

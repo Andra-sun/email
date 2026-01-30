@@ -87,7 +87,7 @@ export function updateHistorySidebar() {
                 }">
                     ${entry.classification}
                 </span>
-                <span class="inline-block px-2 py-0.5 text-xs rounded bg-blue-900/50 text-blue-300">
+                <span class="inline-block px-2 py-0.5 text-xs rounded bg-blue-900/50 text-blue-300 hidden">
                     ${(entry.confidence * 100).toFixed(0)}%
                 </span>
             </div>

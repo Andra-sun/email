@@ -6,7 +6,7 @@ import { initializeQuill } from "./modules/quillConfig.js";
 import { toggleTab } from "./modules/tabs.js";
 import { handleFileSelect } from "./modules/fileUpload.js";
 import { handleSendEmail, handleSendFile } from "./modules/forms.js";
-import { clearResult } from "./modules/results.js";
+import { clearResult, showLoadingSpinner } from "./modules/results.js";
 import { clearQuill } from "./modules/quillConfig.js";
 import { initializeHistory, clearHistory } from "./modules/history.js";
 
@@ -53,4 +53,5 @@ window.toggleTab = toggleTab;
 window.handleFileSelect = handleFileSelect;
 window.clearEditor = clearEditor;
 window.clearResult = clearResult;
+window.showLoadingSpinner = showLoadingSpinner;
 window.clearHistoryData = clearHistory;

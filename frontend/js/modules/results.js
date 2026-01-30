@@ -9,7 +9,24 @@ import {
 
 let responseQuillInitialized = false;
 
+export function showLoadingSpinner() {
+    const loadingSpinner = document.getElementById("loading-spinner");
+    const resultContainer = document.getElementById("result-container");
+    const sendSection = document.getElementById("send-section");
+    
+    if (loadingSpinner) {
+        loadingSpinner.classList.remove("hidden");
+    }
+    if (resultContainer) {
+        resultContainer.classList.add("hidden");
+    }
+    if (sendSection) {
+        sendSection.classList.add("hidden");
+    }
+}
+
 export function showResult(data) {
+    const loadingSpinner = document.getElementById("loading-spinner");
     const resultContainer = document.getElementById("result-container");
     const resultContent = document.getElementById("result-content");
     const responseEditorSection = document.getElementById(
@@ -17,6 +34,11 @@ export function showResult(data) {
     );
     const resultActions = document.getElementById("result-actions");
     const sendSection = document.getElementById("send-section");
+    
+    // Esconde o spinner de carregamento
+    if (loadingSpinner) {
+        loadingSpinner.classList.add("hidden");
+    }
 
     let html = '<div class="space-y-4">';
 
@@ -37,7 +59,7 @@ export function showResult(data) {
 
     if (data.confidence) {
         html += `
-            <div class="p-4 rounded-lg bg-blue-900">
+            <div class="p-4 rounded-lg bg-blue-900 hidden">
                 <p class="text-sm text-slate-300 mb-1">Confiança</p>
                 <p class="text-xl font-bold text-blue-300">${(data.confidence * 100).toFixed(2)}%</p>
             </div>
@@ -106,7 +128,15 @@ ${JSON.stringify(data, null, 2)}
 }
 
 export function clearResult() {
-    document.getElementById("result-container").classList.add("hidden");
+    const loadingSpinner = document.getElementById("loading-spinner");
+    const resultContainer = document.getElementById("result-container");
+    
+    if (loadingSpinner) {
+        loadingSpinner.classList.add("hidden");
+    }
+    if (resultContainer) {
+        resultContainer.classList.add("hidden");
+    }
     document.getElementById("result-content").innerHTML = "";
     document.getElementById("response-editor-section").classList.add("hidden");
     document.getElementById("send-section").classList.remove("hidden");
